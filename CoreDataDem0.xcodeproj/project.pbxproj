@@ -58,11 +58,11 @@
 			children = (
 				9E928B8326CBA18A0001D06C /* AppDelegate.swift */,
 				9E928B8726CBA18A0001D06C /* TaskListViewController.swift */,
+				9E928B9A26CBA66A0001D06C /* TaskViewController.swift */,
 				9E928B8F26CBA18B0001D06C /* Assets.xcassets */,
 				9E928B9126CBA18B0001D06C /* LaunchScreen.storyboard */,
 				9E928B9426CBA18B0001D06C /* Info.plist */,
 				9E928B8C26CBA18A0001D06C /* CoreDataDem0.xcdatamodeld */,
-				9E928B9A26CBA66A0001D06C /* TaskViewController.swift */,
 			);
 			path = CoreDataDem0;
 			sourceTree = "<group>";
