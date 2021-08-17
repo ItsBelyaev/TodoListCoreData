@@ -35,7 +35,8 @@ class TaskListViewController: UITableViewController {
         navigationController?.navigationBar.tintColor = .white
     }
     @objc private func addNewTask() {
-        
+        let newTaskVC = TaskViewController()
+        present(newTaskVC, animated: true)
     }
     
 
