@@ -12,7 +12,7 @@ import CoreData
 
 class TaskListViewController: UITableViewController {
     
-    private var context = StorageManager.shared.persistentContainer.viewContext
+    //    private var context = StorageManager.shared.persistentContainer.viewContext
     private let cellID = "cell"
     private var taskList: [Task] = []
     
@@ -22,7 +22,7 @@ class TaskListViewController: UITableViewController {
         view.backgroundColor = .white
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: cellID)
         setupNavigationBar()
-        fetchData()
+        StorageManager.shared.fetchData(taskList: &taskList)
     }
     
     
@@ -48,22 +48,14 @@ class TaskListViewController: UITableViewController {
         showAlert(title: "New Task", message: "What do you want to do?")
     }
     
-    private func fetchData() {
-        let fetchRequest: NSFetchRequest<Task> = Task.fetchRequest()
-        
-        do {
-            taskList = try context.fetch(fetchRequest)
-        } catch let error{
-            print(error.localizedDescription)
-        }
-        
-        
-    }
+    
+    
+    
     private func showAlert(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         let addAction = UIAlertAction(title: "Add", style: .cancel) { _ in
             guard let task = alert.textFields?.first?.text, !task.isEmpty else { return }
-            self.save(task)
+            StorageManager.shared.save(task, tableView: self.tableView, taskList: &self.taskList)
         }
         let cancelAction = UIAlertAction(title: "Cancel", style: .destructive)
         
@@ -76,33 +68,12 @@ class TaskListViewController: UITableViewController {
         present(alert, animated: true, completion: nil)
         
     }
-    private func save(_ taskName: String) {
-        
-        guard let entityDescription = NSEntityDescription.entity(forEntityName: "Task", in: context) else {
-            return
-        }
-        guard let task = NSManagedObject(entity: entityDescription, insertInto: context) as? Task else {return}
-        
-        task.name = taskName
-        taskList.append(task)
-        
-        
-        let cellIndex = IndexPath(row: taskList.count - 1, section: 0)
-        
-        tableView.insertRows(at: [cellIndex], with: .automatic)
-        
-        if context.hasChanges {
-            do {
-                try context.save()
-            } catch let error {
-                print(error.localizedDescription)
-            }
-        }
-        
-    }
-    
-    
 }
+
+
+
+
+
 
 extension TaskListViewController {
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -123,18 +94,8 @@ extension TaskListViewController {
         
         let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { _, _, _ in
             
-            let fetchRequest: NSFetchRequest<Task> = Task.fetchRequest()
-            guard let objects = try? self.context.fetch(fetchRequest) else {return }
-            self.taskList.remove(at: indexPath.row)
-            self.context.delete(objects[indexPath.row])
-            self.tableView.reloadData()
-            
-            do {
-                try self.context.save()
-            } catch let error {
-                print(error.localizedDescription)
-            }
-            
+
+            StorageManager.shared.delete(tableView: tableView, indexPath: indexPath, taskList: &self.taskList)
             
         }
         
@@ -150,23 +111,12 @@ extension TaskListViewController {
         
         let editAction = UIAlertAction(title: "Done", style: .cancel) { _ in
             
-            let fetchRequest: NSFetchRequest<Task> = Task.fetchRequest()
+            self.taskList[indexPath.row].name = alert.textFields?.first?.text
             
-            guard let objects = try? self.context.fetch(fetchRequest) else {return }
+            StorageManager.shared.saveContext()
+            tableView.reloadRows(at: [indexPath], with: .automatic)
             
-            objects[indexPath.row].name = alert.textFields?.first?.text
             
-            self.taskList.remove(at: indexPath.row)
-            self.taskList.insert(objects[indexPath.row], at: indexPath.row)
-            
-            do {
-                try self.context.save()
-            } catch let error {
-                print(error.localizedDescription)
-            }
-            self.tableView.reloadData()
-            
-
         }
         let cancelAction = UIAlertAction(title: "Cancel", style: .destructive)
         alert.addAction(editAction)
